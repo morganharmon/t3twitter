@@ -5,6 +5,7 @@ import { VscHeart, VscHeartFilled } from "react-icons/vsc";
 import { useSession } from "next-auth/react";
 import { IconHoverEffect } from "./IconHoverEffect";
 import { api } from "~/utils/api";
+import { LoadingSpinner } from "./LoadingSpinner";
 
 type Tweet = {
     id: string;
@@ -25,7 +26,7 @@ type InfiniteTweetListProps = {
 
 export function InfiniteTweetList({ tweets, isError, isLoading, fetchNewTweets, hasMore }: InfiniteTweetListProps) {
     const dateTimeFormatter = new Intl.DateTimeFormat(undefined, { dateStyle: "short" });
-    if (isLoading) return <h1>Loading...</h1>;
+    if (isLoading) return <LoadingSpinner />
     if (isError) return <h1>Error...</h1>;
     if (tweets == null || tweets.length === 0) {
         return (
@@ -39,7 +40,7 @@ export function InfiniteTweetList({ tweets, isError, isLoading, fetchNewTweets, 
                 dataLength={tweets.length}
                 next={fetchNewTweets}
                 hasMore={hasMore}
-                loader={"Loading..."}
+                loader={<LoadingSpinner  />}
             >
                 {tweets.map(tweet => {
                     return <TweetCard key={tweet.id} {...tweet} />;
@@ -77,6 +78,8 @@ export function InfiniteTweetList({ tweets, isError, isLoading, fetchNewTweets, 
                     }
                 }
             trpcUtils.tweet.infiniteFeed.setInfiniteData({}, updateData);
+            trpcUtils.tweet.infiniteFeed.setInfiniteData({ onlyFollowing: true }, updateData);
+            trpcUtils.tweet.infiniteProfileFeed.setInfiniteData({ userId: user.id }, updateData);
         }});
 
         function handleToggleLike() {
@@ -90,8 +93,7 @@ export function InfiniteTweetList({ tweets, isError, isLoading, fetchNewTweets, 
             </Link>
             <div className="flex flex-grow flex-col">
                 <div className="flex gap-1">
-                    <Link
-                        href={`/profiles/$user.id}`}
+                    <Link href={`/profiles/${user.id}`}
                         className="font-bold outline-none hover:underline focus-visible:underline"
                     >
                         {user.name}
